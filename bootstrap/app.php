@@ -1,8 +1,11 @@
 <?php
 
+use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\RateLimiter;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -13,6 +16,21 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
         //
+    })
+    ->booting(function () {
+        // Rate limiter untuk endpoint API umum (60 request per menit per user)
+        RateLimiter::for('api', function (Request $request) {
+            return Limit::perMinute(60)->by(
+                $request->user()?->id ?: $request->ip()
+            );
+        });
+
+        // Rate limiter khusus login (5 request per menit, cegah brute force)
+        RateLimiter::for('login', function (Request $request) {
+            return Limit::perMinute(5)->by(
+                $request->input('email') . '|' . $request->ip()
+            );
+        });
     })
     ->withExceptions(function (Exceptions $exceptions) {
         

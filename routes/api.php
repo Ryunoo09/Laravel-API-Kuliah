@@ -7,28 +7,40 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 // ================================================================
-// PUBLIC ROUTES (tidak butuh login)
+// API v1 — Semua route dibungkus dalam prefix 'v1'
+// URL menjadi: /api/v1/login, /api/v1/posts, dst.
 // ================================================================
-Route::post('/login', [AuthController::class, 'login']);
+Route::prefix('v1')->group(function () {
 
-// Register bisa diakses oleh:
-//   - User yang belum login (publik) → didaftarkan sebagai 'user' biasa
-//   - Admin yang sudah login       → bisa mendaftarkan user dengan role apapun
-// User yang sudah login dengan role 'user' akan DITOLAK di controller.
-Route::post('/register', [AuthController::class, 'register']);
+    // ============================================================
+    // PUBLIC ROUTES (tidak butuh login)
+    // ============================================================
 
-// ================================================================
-// PROTECTED ROUTES (butuh login / Bearer token)
-// ================================================================
-Route::middleware('auth:sanctum')->group(function () {
+    // Login: dibatasi 5 request per menit per IP (cegah brute force)
+    Route::post('/login', [AuthController::class, 'login'])
+        ->middleware('throttle:login');
 
-    // -- Auth --
-    Route::post('/logout', [AuthController::class, 'logout']);
-    Route::post('/reset-password', [AuthController::class, 'resetPassword']);
+    // Register bisa diakses oleh:
+    //   - User yang belum login (publik) → didaftarkan sebagai 'user' biasa
+    //   - Admin yang sudah login       → bisa mendaftarkan user dengan role apapun
+    // User yang sudah login dengan role 'user' akan DITOLAK di controller.
+    Route::post('/register', [AuthController::class, 'register']);
 
-    // -- Posts CRUD --
-    Route::apiResource('posts', PostController::class);
+    // ============================================================
+    // PROTECTED ROUTES (butuh login / Bearer token)
+    // Rate limit: 60 request per menit per user (throttle:api)
+    // ============================================================
+    Route::middleware(['auth:sanctum', 'throttle:api'])->group(function () {
 
-    // -- Comments CRUD --
-    Route::apiResource('comments', CommentController::class);
+        // -- Auth --
+        Route::post('/logout', [AuthController::class, 'logout']);
+        Route::post('/reset-password', [AuthController::class, 'resetPassword']);
+
+        // -- Posts CRUD --
+        Route::apiResource('posts', PostController::class);
+
+        // -- Comments CRUD --
+        Route::apiResource('comments', CommentController::class);
+    });
+
 });

@@ -1,0 +1,403 @@
+name: Posts
+description: ''
+endpoints:
+  -
+    custom: []
+    httpMethods:
+      - GET
+    uri: api/v1/posts
+    metadata:
+      custom: []
+      groupName: Posts
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'List All Posts'
+      description: 'Menampilkan semua post milik user yang login. Admin dapat melihat semua post.'
+      authenticated: true
+      deprecated: false
+    headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        custom: []
+        status: 200
+        content: |-
+          {
+            "data": [
+              {
+                "id": 1,
+                "title": "Post Pertama",
+                "status": "published",
+                "content": "Isi dari post pertama.",
+                "created_at": "2026-04-20 10:00:00",
+                "updated_at": "2026-04-20 10:00:00",
+                "link": "/api/v1/posts/1"
+              }
+            ]
+          }
+        headers: []
+        description: ''
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 6g43cv8PD1aE5beadkZfhV6'
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - POST
+    uri: api/v1/posts
+    metadata:
+      custom: []
+      groupName: Posts
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Create Post'
+      description: 'Membuat post baru. Post akan otomatis dimiliki oleh user yang sedang login.'
+      authenticated: true
+      deprecated: false
+    headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters: []
+    cleanUrlParameters: []
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      title:
+        custom: []
+        name: title
+        description: 'Judul post, maksimal 100 karakter.'
+        required: true
+        example: 'Belajar Laravel 12'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+      status:
+        custom: []
+        name: status
+        description: 'Status post: draft atau published. Default: draft.'
+        required: false
+        example: published
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+      content:
+        custom: []
+        name: content
+        description: 'Isi/konten post.'
+        required: true
+        example: 'Laravel 12 adalah versi terbaru dari framework PHP Laravel.'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+    cleanBodyParameters:
+      title: 'Belajar Laravel 12'
+      status: published
+      content: 'Laravel 12 adalah versi terbaru dari framework PHP Laravel.'
+    fileParameters: []
+    responses:
+      -
+        custom: []
+        status: 201
+        content: |-
+          {
+            "data": {
+              "id": 1,
+              "title": "Belajar Laravel 12",
+              "status": "published",
+              "content": "Laravel 12 adalah versi terbaru dari framework PHP Laravel.",
+              "created_at": "2026-04-20 10:00:00",
+              "updated_at": "2026-04-20 10:00:00",
+              "link": "/api/v1/posts/1"
+            }
+          }
+        headers: []
+        description: ''
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 6g43cv8PD1aE5beadkZfhV6'
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - GET
+    uri: 'api/v1/posts/{id}'
+    metadata:
+      custom: []
+      groupName: Posts
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Show Post'
+      description: 'Menampilkan detail satu post berdasarkan ID.'
+      authenticated: true
+      deprecated: false
+    headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      id:
+        custom: []
+        name: id
+        description: 'The ID of the post.'
+        required: true
+        example: 16
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+      post:
+        custom: []
+        name: post
+        description: 'ID dari post.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+    cleanUrlParameters:
+      id: 16
+      post: 1
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        custom: []
+        status: 200
+        content: |-
+          {
+            "data": {
+              "id": 1,
+              "title": "Post Pertama",
+              "status": "published",
+              "content": "Isi dari post pertama.",
+              "created_at": "2026-04-20 10:00:00",
+              "updated_at": "2026-04-20 10:00:00",
+              "link": "/api/v1/posts/1"
+            }
+          }
+        headers: []
+        description: ''
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 6g43cv8PD1aE5beadkZfhV6'
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - PUT
+      - PATCH
+    uri: 'api/v1/posts/{id}'
+    metadata:
+      custom: []
+      groupName: Posts
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Update Post'
+      description: 'Mengubah data post yang sudah ada. Hanya pemilik post atau admin yang bisa mengubah.'
+      authenticated: true
+      deprecated: false
+    headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      id:
+        custom: []
+        name: id
+        description: 'The ID of the post.'
+        required: true
+        example: 16
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+      post:
+        custom: []
+        name: post
+        description: 'ID dari post.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+    cleanUrlParameters:
+      id: 16
+      post: 1
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters:
+      title:
+        custom: []
+        name: title
+        description: 'Judul post baru.'
+        required: false
+        example: 'Judul Diperbarui'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+      status:
+        custom: []
+        name: status
+        description: 'Status post: draft atau published.'
+        required: false
+        example: published
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+      content:
+        custom: []
+        name: content
+        description: 'Konten post baru.'
+        required: false
+        example: 'Konten yang sudah diperbarui.'
+        type: string
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+    cleanBodyParameters:
+      title: 'Judul Diperbarui'
+      status: published
+      content: 'Konten yang sudah diperbarui.'
+    fileParameters: []
+    responses:
+      -
+        custom: []
+        status: 200
+        content: |-
+          {
+            "data": {
+              "id": 1,
+              "title": "Judul Diperbarui",
+              "status": "published",
+              "content": "Konten yang sudah diperbarui.",
+              "created_at": "2026-04-20 10:00:00",
+              "updated_at": "2026-04-25 12:00:00",
+              "link": "/api/v1/posts/1"
+            }
+          }
+        headers: []
+        description: ''
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 6g43cv8PD1aE5beadkZfhV6'
+    controller: null
+    method: null
+    route: null
+  -
+    custom: []
+    httpMethods:
+      - DELETE
+    uri: 'api/v1/posts/{id}'
+    metadata:
+      custom: []
+      groupName: Posts
+      groupDescription: ''
+      subgroup: ''
+      subgroupDescription: ''
+      title: 'Delete Post'
+      description: 'Menghapus post berdasarkan ID. Hanya pemilik post atau admin yang bisa menghapus.'
+      authenticated: true
+      deprecated: false
+    headers:
+      Authorization: 'Bearer {YOUR_AUTH_KEY}'
+      Content-Type: application/json
+      Accept: application/json
+    urlParameters:
+      id:
+        custom: []
+        name: id
+        description: 'The ID of the post.'
+        required: true
+        example: 16
+        type: integer
+        enumValues: []
+        exampleWasSpecified: false
+        nullable: false
+        deprecated: false
+      post:
+        custom: []
+        name: post
+        description: 'ID dari post.'
+        required: true
+        example: 1
+        type: integer
+        enumValues: []
+        exampleWasSpecified: true
+        nullable: false
+        deprecated: false
+    cleanUrlParameters:
+      id: 16
+      post: 1
+    queryParameters: []
+    cleanQueryParameters: []
+    bodyParameters: []
+    cleanBodyParameters: []
+    fileParameters: []
+    responses:
+      -
+        custom: []
+        status: 200
+        content: |-
+          {
+            "id": 1,
+            "deleted": true
+          }
+        headers: []
+        description: ''
+    responseFields: []
+    auth:
+      - headers
+      - Authorization
+      - 'Bearer 6g43cv8PD1aE5beadkZfhV6'
+    controller: null
+    method: null
+    route: null
