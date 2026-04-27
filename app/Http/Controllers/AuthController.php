@@ -17,8 +17,34 @@ class AuthController extends Controller
     }
 
     /**
-     * POST /api/login
-     * Endpoint publik untuk login.
+     * Login
+     *
+     * Autentikasi user dan mendapatkan access token.
+     *
+     * @group Authentication
+     * @unauthenticated
+     *
+     * @bodyParam email string required Alamat email user. Example: admin@example.com
+     * @bodyParam password string required Password user. Example: password
+     *
+     * @response 200 {
+     *   "success": true,
+     *   "message": "Login berhasil.",
+     *   "access_token": "1|abc123def456...",
+     *   "token_type": "Bearer",
+     *   "user": {
+     *     "id": 1,
+     *     "name": "Admin",
+     *     "email": "admin@example.com",
+     *     "role": "admin"
+     *   }
+     * }
+     * @response 422 {
+     *   "message": "The given data was invalid.",
+     *   "errors": {
+     *     "email": ["Alamat email atau password salah."]
+     *   }
+     * }
      */
     public function login(Request $request)
     {
@@ -44,12 +70,34 @@ class AuthController extends Controller
     }
 
     /**
-     * POST /api/register
+     * Register
      *
-     * Skenario akses:
-     *   1. Belum login (publik)     → BOLEH register, role otomatis 'user'
-     *   2. Login sebagai 'user'     → DITOLAK 403
-     *   3. Login sebagai 'admin'    → BOLEH register, bisa pilih role target
+     * Mendaftarkan user baru. Endpoint ini bisa diakses secara publik (role default 'user')
+     * atau oleh admin yang sudah login (bisa menentukan role).
+     *
+     * @group Authentication
+     * @unauthenticated
+     *
+     * @bodyParam name string required Nama lengkap user. Example: John Doe
+     * @bodyParam email string required Alamat email unik. Example: john@example.com
+     * @bodyParam password string required Password minimal 8 karakter. Example: password123
+     * @bodyParam password_confirmation string required Konfirmasi password. Example: password123
+     * @bodyParam role string Opsional, hanya untuk admin. Nilai: admin, user. Example: user
+     *
+     * @response 201 {
+     *   "success": true,
+     *   "message": "Registrasi berhasil.",
+     *   "user": {
+     *     "id": 2,
+     *     "name": "John Doe",
+     *     "email": "john@example.com",
+     *     "role": "user"
+     *   }
+     * }
+     * @response 403 {
+     *   "success": false,
+     *   "message": "Akses ditolak. Pengguna yang sudah login tidak dapat melakukan registrasi."
+     * }
      */
     public function register(Request $request)
     {
@@ -96,8 +144,17 @@ class AuthController extends Controller
     }
 
     /**
-     * POST /api/logout
-     * Endpoint untuk logout (membutuhkan autentikasi).
+     * Logout
+     *
+     * Menghapus/revoke token yang sedang digunakan saat ini.
+     *
+     * @group Authentication
+     * @authenticated
+     *
+     * @response 200 {
+     *   "success": true,
+     *   "message": "Logout berhasil. Token telah dihapus."
+     * }
      */
     public function logout(Request $request)
     {
@@ -110,9 +167,23 @@ class AuthController extends Controller
     }
 
     /**
-     * POST /api/reset-password
-     * - User biasa: harus menyertakan old_password dan new_password (untuk password sendiri).
-     * - Admin: menyertakan email target, new_password (tanpa perlu old_password).
+     * Reset Password
+     *
+     * User biasa mereset password dirinya sendiri (wajib kirim old_password).
+     * Admin bisa mereset password user lain berdasarkan email (tanpa old_password).
+     *
+     * @group Authentication
+     * @authenticated
+     *
+     * @bodyParam old_password string Password lama (wajib untuk user biasa). Example: oldpassword123
+     * @bodyParam new_password string required Password baru minimal 8 karakter. Example: newpassword123
+     * @bodyParam new_password_confirmation string required Konfirmasi password baru. Example: newpassword123
+     * @bodyParam email string Email target (wajib untuk admin). Example: john@example.com
+     *
+     * @response 200 {
+     *   "success": true,
+     *   "message": "Password berhasil direset."
+     * }
      */
     public function resetPassword(Request $request)
     {
