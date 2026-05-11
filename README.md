@@ -19,6 +19,11 @@
 - [Rate Limiting](#-rate-limiting)
 - [Format Response](#-format-response)
 - [Error Handling](#-error-handling)
+- [🧪 Automated Testing](#-automated-testing)
+  - [Setup & Konfigurasi](#setup--konfigurasi)
+  - [Struktur Test](#struktur-test)
+  - [Menjalankan Test](#menjalankan-test)
+  - [Skenario Test](#skenario-test)
 
 ---
 
@@ -32,7 +37,9 @@
 | Laravel Tinker | ^2.10 | REPL interaktif untuk debugging |
 | Knuckleswtf/Scribe | ^5.9 | Auto-generate dokumentasi API |
 | MySQL | — | Database utama (dapat diganti SQLite untuk dev) |
-| FakerPHP | ^1.23 | Generate data palsu untuk seeder |
+| FakerPHP | ^1.23 | Generate data palsu untuk seeder / testing |
+| PHPUnit | ^11.5 | Framework automated testing (bawaan Laravel) |
+| SQLite `:memory:` | — | Database in-memory khusus untuk sesi testing |
 
 ---
 
@@ -92,7 +99,9 @@ laravel_12_tester/
 │   ├── seeders/
 │   │   └── DatabaseSeeder.php     # Isi data awal: 1 admin, 6 user, 7 post, 7 comment
 │   │
-│   └── factories/                 # Factory untuk testing (jika digunakan)
+│   └── factories/                 # Factory untuk generate data dummy saat testing
+│       ├── UserFactory.php        # Factory User + state: admin(), asUser()
+│       └── PostFactory.php        # Factory Post + state: published(), draft()
 │
 ├── routes/
 │   ├── api.php                    # Semua route API (prefix: /api/v1/...)
@@ -100,7 +109,12 @@ laravel_12_tester/
 │   └── console.php                # Route untuk Artisan command schedule
 │
 ├── storage/                       # File yang di-generate aplikasi (log, cache, upload)
-├── tests/                         # Unit & Feature test
+├── tests/                         # Automated test (PHPUnit)
+│   ├── TestCase.php               # Base test class (use RefreshDatabase)
+│   ├── Feature/
+│   │   └── PostTest.php           # 13 skenario API test (401/201/200/403/404/422)
+│   └── Unit/
+│       └── PostServiceTest.php    # 6 skenario unit test business logic
 ├── public/                        # Entry point web server (index.php)
 ├── resources/                     # View blade, JS, CSS (tidak digunakan di API-only)
 ├── vendor/                        # Dependensi Composer (jangan diedit manual)
@@ -109,7 +123,8 @@ laravel_12_tester/
 ├── .env.example                   # Template .env untuk onboarding developer baru
 ├── composer.json                  # Definisi dependensi PHP
 ├── artisan                        # CLI Laravel
-└── phpunit.xml                    # Konfigurasi pengujian PHPUnit
+├── phpunit.xml                    # Konfigurasi PHPUnit (SQLite :memory: aktif)
+└── .env.testing                   # Override environment khusus testing
 ```
 
 ### Penjelasan Folder Utama
@@ -799,6 +814,255 @@ php artisan tinker
 | `GET` | `/api/v1/comments/{id}` | 🔒 Auth | Detail komentar |
 | `PUT` | `/api/v1/comments/{id}` | 🔒 Auth | Update komentar |
 | `DELETE` | `/api/v1/comments/{id}` | 🔒 Auth | Hapus komentar |
+
+---
+
+## 🧪 Automated Testing
+
+> Mengadopsi konsep **Bab 8** — pengujian otomatis berbasis **PHPUnit** dengan database **SQLite `:memory:`** untuk isolasi dan kecepatan penuh.
+
+**Hasil uji terbaru:** `22 tests passed · 46 assertions · ⚡ 1.75s`
+
+---
+
+### Setup & Konfigurasi
+
+#### `phpunit.xml` — Database Testing
+
+Laravel sudah menyertakan `phpunit.xml` di root project. Konfigurasi berikut mengaktifkan SQLite `:memory:` agar setiap test run menggunakan database baru yang terisolasi:
+
+```xml
+<php>
+    <env name="APP_ENV"          value="testing"/>
+    <env name="DB_CONNECTION"    value="sqlite"/>     <!-- ← SQLite, bukan MySQL -->
+    <env name="DB_DATABASE"      value=":memory:"/>   <!-- ← in-memory, super cepat -->
+    <env name="BCRYPT_ROUNDS"    value="4"/>          <!-- ← hash lebih cepat saat test -->
+    <env name="CACHE_STORE"      value="array"/>
+    <env name="QUEUE_CONNECTION" value="sync"/>
+    <env name="SESSION_DRIVER"   value="array"/>
+</php>
+```
+
+#### `.env.testing` — Override Environment
+
+File ini dibaca Laravel **secara otomatis** saat `APP_ENV=testing`, meng-override `.env` utama:
+
+```ini
+APP_ENV=testing
+DB_CONNECTION=sqlite
+DB_DATABASE=:memory:
+CACHE_STORE=array
+QUEUE_CONNECTION=sync
+BCRYPT_ROUNDS=4
+MAIL_MAILER=array
+```
+
+> ⚠️ **Penting:** Database production (MySQL) **tidak pernah tersentuh** saat testing karena SQLite `:memory:` dibuat dari nol dan hilang setelah proses test selesai.
+
+---
+
+### Struktur Test
+
+```
+tests/
+├── TestCase.php               ← Base class: use RefreshDatabase (berlaku global)
+│
+├── Feature/                   ← API / HTTP testing (end-to-end)
+│   └── PostTest.php           ← 13 skenario uji endpoint /api/v1/posts
+│
+└── Unit/                      ← Business logic testing (tanpa HTTP)
+    └── PostServiceTest.php    ← 6 skenario uji method di PostService
+```
+
+#### `tests/TestCase.php` — Base Test Class
+
+```php
+abstract class TestCase extends BaseTestCase
+{
+    use RefreshDatabase;  // ← Otomatis jalankan migration & reset DB setiap test
+}
+```
+
+`RefreshDatabase` memastikan setiap test method mendapat database yang **bersih**. Karena menggunakan SQLite `:memory:`, seluruh siklus migration selesai dalam hitungan milidetik.
+
+---
+
+#### Factory — Generate Data Dummy
+
+Factory digunakan untuk membuat data dummy secara otomatis tanpa perlu menulis SQL manual:
+
+**`UserFactory`** — membuat user dengan role tertentu:
+```php
+// User biasa
+$user = User::factory()->asUser()->create();
+
+// User admin
+$admin = User::factory()->admin()->create();
+
+// 5 user sekaligus
+$users = User::factory()->count(5)->asUser()->create();
+```
+
+**`PostFactory`** — membuat post dengan status tertentu:
+```php
+// Post acak milik user tertentu
+$post = Post::factory()->create(['user_id' => $user->id]);
+
+// 3 post published
+Post::factory()->count(3)->published()->create(['user_id' => $user->id]);
+
+// Post draft
+$draft = Post::factory()->draft()->create(['user_id' => $user->id]);
+```
+
+---
+
+### Menjalankan Test
+
+```bash
+# Jalankan SEMUA test
+php artisan test
+
+# Hanya Feature tests (API/HTTP)
+php artisan test --testsuite=Feature
+
+# Hanya Unit tests (business logic)
+php artisan test --testsuite=Unit
+
+# Jalankan satu file test
+php artisan test tests/Feature/PostTest.php
+
+# Filter berdasarkan nama method
+php artisan test --filter=authenticated_user_can_create_post
+
+# Output detail per method
+php artisan test --verbose
+
+# Buat file test baru
+php artisan make:test NamaTest           # Feature test
+php artisan make:test NamaTest --unit    # Unit test
+```
+
+---
+
+### Skenario Test
+
+#### `tests/Feature/PostTest.php` — 13 Skenario
+
+| # | Skenario | HTTP | Method |
+|---|---|---|---|
+| 1 | Tanpa token → GET `/posts` | `401` | `unauthenticated_user_cannot_list_posts` |
+| 2 | Tanpa token → POST `/posts` | `401` | `unauthenticated_user_cannot_create_post` |
+| 3 | Tanpa token → PUT `/posts/{id}` | `401` | `unauthenticated_user_cannot_update_post` |
+| 4 | Login + buat post → validasi JSON Resource | `201` | `authenticated_user_can_create_post` |
+| 5 | Login + list post → hanya milik sendiri | `200` | `authenticated_user_can_list_own_posts` |
+| 6 | Admin login → melihat semua post | `200` | `admin_can_see_all_posts` |
+| 7 | Login + lihat detail post sendiri | `200` | `user_can_view_own_post` |
+| 8 | User A edit post milik User B | `403` | `user_cannot_update_post_of_another_user` |
+| 9 | User A lihat detail post milik User B | `403` | `user_cannot_view_post_of_another_user` |
+| 10 | User biasa coba hapus post (non-admin) | `403` | `regular_user_cannot_delete_any_post` |
+| 11 | Request ke ID post yang tidak ada | `404` | `returns_404_for_nonexistent_post` |
+| 12 | Update ke ID post yang tidak ada | `404` | `returns_404_when_updating_nonexistent_post` |
+| 13 | Admin hapus post siapapun | `200` | `admin_can_delete_any_post` |
+| 14 | Buat post tanpa field `title` | `422` | `cannot_create_post_without_required_title` |
+
+**Contoh skenario 401 (Unauthenticated):**
+```php
+#[Test]
+public function unauthenticated_user_cannot_list_posts(): void
+{
+    $response = $this->getJson('/api/v1/posts');
+    $response->assertUnauthorized(); // HTTP 401
+}
+```
+
+**Contoh skenario 201 (Authenticated + validasi JSON Resource):**
+```php
+#[Test]
+public function authenticated_user_can_create_post(): void
+{
+    $user = User::factory()->asUser()->create();
+
+    $response = $this->actingAs($user, 'sanctum')  // Simulasi login
+        ->postJson('/api/v1/posts', [
+            'title'   => 'Belajar Automated Testing',
+            'content' => 'Testing adalah kunci kualitas software.',
+            'status'  => 'published',
+        ]);
+
+    $response
+        ->assertCreated()                    // HTTP 201
+        ->assertJsonStructure([              // Validasi struktur JSON Resource
+            'data' => ['id', 'title', 'status', 'content', 'created_at', 'link'],
+        ])
+        ->assertJsonPath('data.status', 'published');
+
+    $this->assertDatabaseHas('posts', [      // Verifikasi tersimpan di DB
+        'title'   => 'Belajar Automated Testing',
+        'user_id' => $user->id,
+    ]);
+}
+```
+
+**Contoh skenario 403 (Forbidden — Otorisasi):**
+```php
+#[Test]
+public function user_cannot_update_post_of_another_user(): void
+{
+    $userA       = User::factory()->asUser()->create();
+    $userB       = User::factory()->asUser()->create();
+    $postOfUserA = Post::factory()->create(['user_id' => $userA->id]);
+
+    // userB mencoba edit post milik userA
+    $response = $this->actingAs($userB, 'sanctum')
+        ->putJson("/api/v1/posts/{$postOfUserA->id}", ['title' => 'Upaya Tidak Sah']);
+
+    $response->assertForbidden(); // HTTP 403
+}
+```
+
+**Contoh skenario 404 (Not Found):**
+```php
+#[Test]
+public function returns_404_for_nonexistent_post(): void
+{
+    $user = User::factory()->asUser()->create();
+
+    $response = $this->actingAs($user, 'sanctum')
+        ->getJson('/api/v1/posts/9999');  // ID tidak ada
+
+    $response->assertNotFound(); // HTTP 404
+}
+```
+
+---
+
+#### `tests/Unit/PostServiceTest.php` — 6 Skenario
+
+| # | Skenario | Method |
+|---|---|---|
+| 1 | Admin mendapat semua post | `admin_gets_all_posts` |
+| 2 | User biasa hanya lihat post miliknya | `regular_user_gets_only_own_posts` |
+| 3 | Non-owner update → melempar HTTP 403 | `update_throws_403_for_non_owner` |
+| 4 | Non-admin delete → melempar HTTP 403 | `delete_throws_403_for_non_admin` |
+| 5 | Admin hapus post tanpa exception | `admin_can_delete_any_post` |
+| 6 | `createPost` menyimpan `user_id` yang benar | `create_post_assigns_correct_user_id` |
+
+Unit test memanggil **service method langsung** tanpa HTTP request:
+```php
+#[Test]
+public function update_throws_403_for_non_owner(): void
+{
+    $this->expectException(HttpException::class);
+
+    $owner = User::factory()->asUser()->create();
+    $other = User::factory()->asUser()->create();
+    $post  = Post::factory()->create(['user_id' => $owner->id]);
+
+    // Langsung panggil service — bukan via HTTP
+    $this->postService->updatePost($post, ['title' => 'Hack'], $other);
+}
+```
 
 ---
 
