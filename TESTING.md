@@ -9,7 +9,7 @@ Dokumen ini menjelaskan sistem pengujian otomatis yang diimplementasikan dalam p
 2. [Konfigurasi & Lingkungan Pengujian](#2-konfigurasi--lingkungan-pengujian)
 3. [Detail Implementasi Test Case](#3-detail-implementasi-test-case)
     - [Unit Testing (`PostServiceTest`)](#a-unit-testing-postservicetest)
-    - [Feature/API Testing (`PostTest`)](#b-featureapi-testing-posttest)
+    - [Feature/API Testing (`PostTest` & `AuthTest`)](#b-featureapi-testing-posttest--authtest)
 4. [Cara Menjalankan Pengujian](#4-cara-menjalankan-pengujian)
 5. [Praktik Terbaik (Best Practices) yang Diterapkan](#5-praktik-terbaik-best-practices-yang-diterapkan)
 
@@ -27,6 +27,8 @@ graph TD
     B1 -->|Fokus| B2[Business Logic Terisolasi]
     C --> C1[PostTest.php]
     C1 -->|Fokus| C2[HTTP Endpoints & Integration]
+    C --> C3[AuthTest.php]
+    C3 -->|Fokus| C4[Otentikasi & Reset Password]
 ```
 
 ### A. Unit Tests (Pengujian Unit)
@@ -66,7 +68,7 @@ Setiap kali satu unit atau fitur test dijalankan, Laravel akan menjalankan ulang
 
 ## 3. Detail Implementasi Test Case
 
-Total terdapat **22 test methods** yang tersebar di 4 file pengujian dalam proyek ini. Berikut rincian lengkapnya:
+Total terdapat **35 test methods** yang tersebar di 5 file pengujian dalam proyek ini. Berikut rincian lengkapnya:
 
 ### A. Unit Testing (Total: 7 Tests)
 
@@ -84,7 +86,7 @@ Menguji business logic [PostService](file:///c:/FILE%20CODE/REPO%20Integrative%2
 
 ---
 
-### B. Feature/API Testing (Total: 15 Tests)
+### B. Feature/API Testing (Total: 28 Tests)
 
 #### 1. [ExampleTest.php](file:///c:/FILE%20CODE/REPO%20Integrative%20programming/Laravel_12/laravel_12_tester/tests/Feature/ExampleTest.php) (1 Test)
 * `the_application_returns_a_successful_response`: Memastikan endpoint root `/` dapat diakses dengan sukses (HTTP 200).
@@ -113,6 +115,26 @@ Simulasi HTTP request/response API endpoint `/api/v1/posts`:
   * `admin_can_delete_any_post`: Admin berhasil menghapus post siapapun dan menerima response JSON `{deleted: true}`.
 * **Skenario 422 - Validation**
   * `cannot_create_post_without_required_title`: Validasi error ketika request pembuat post tidak menyertakan field `title`.
+
+#### 3. [AuthTest.php](file:///c:/FILE%20CODE/REPO%20Integrative%20programming/Laravel_12/laravel_12_tester/tests/Feature/AuthTest.php) (13 Tests)
+Simulasi alur autentikasi dan reset password API di `/api/v1/...`:
+* **Skenario Login (`POST /api/v1/login`)**
+  * `login_succeeds_with_valid_credentials`: Login sukses menggunakan kredensial terdaftar dan mendapatkan token Sanctum.
+  * `login_fails_with_wrong_password`: Gagal masuk dengan respon validasi error jika password tidak cocok (HTTP 422).
+  * `login_fails_with_missing_fields`: Validasi error jika form login kosong (HTTP 422).
+* **Skenario Register (`POST /api/v1/register`)**
+  * `register_succeeds_for_public_as_regular_user`: Pendaftaran publik berhasil secara default sebagai role 'user'.
+  * `register_by_admin_succeeds_with_custom_role`: Admin yang login dapat mendaftarkan akun baru dengan role kustom ('admin'/'user').
+  * `register_fails_for_logged_in_non_admin`: Menolak user biasa yang sudah login untuk mendaftar kembali (HTTP 403).
+  * `register_fails_with_invalid_input`: Validasi error jika input registrasi tidak sesuai atau email duplikat.
+* **Skenario Logout (`POST /api/v1/logout`)**
+  * `logout_succeeds_for_authenticated_user`: Revoke token aktif saat ini dengan sukses (HTTP 200).
+  * `logout_fails_for_unauthenticated_user`: Menolak permintaan logout dari pengguna tidak sah (HTTP 401).
+* **Skenario Reset Password (`POST /api/v1/reset-password`)**
+  * `regular_user_can_reset_own_password_with_valid_old_password`: User mengganti password miliknya setelah memverifikasi password lama.
+  * `regular_user_cannot_reset_own_password_with_invalid_old_password`: Gagal ganti password jika password lama tidak cocok (HTTP 422).
+  * `admin_can_reset_password_of_any_user_without_old_password`: Admin dapat langsung mengubah password user lain berbekal email user target.
+  * `reset_password_fails_with_unmatched_new_password_confirmation`: Validasi error jika password baru dan konfirmasi tidak sama.
 
 ---
 
