@@ -66,34 +66,53 @@ Setiap kali satu unit atau fitur test dijalankan, Laravel akan menjalankan ulang
 
 ## 3. Detail Implementasi Test Case
 
-### A. Unit Testing (`PostServiceTest`)
-Kelas pengujian [PostServiceTest.php](file:///c:/FILE%20CODE/REPO%20Integrative%20programming/Laravel_12/laravel_12_tester/tests/Unit/PostServiceTest.php) berfokus pada pengujian unit terhadap layanan [PostService](file:///c:/FILE%20CODE/REPO%20Integrative%20programming/Laravel_12/laravel_12_tester/app/Services/PostService.php).
+Total terdapat **22 test methods** yang tersebar di 4 file pengujian dalam proyek ini. Berikut rincian lengkapnya:
 
-Metode pengujian yang diimplementasikan:
-1. `admin_gets_all_posts`: Memastikan pengguna dengan peran Admin dapat memperoleh semua daftar post dari semua user lain.
-2. `regular_user_gets_only_own_posts`: Memastikan user biasa hanya mendapatkan daftar post milik mereka sendiri.
-3. `update_throws_403_for_non_owner`: Memastikan service melempar pengecualian HTTP 403 (HttpException) jika seseorang mencoba memperbarui post yang bukan miliknya.
-4. `delete_throws_403_for_non_admin`: Memastikan service menolak aksi hapus dari user biasa dengan melemparkan HttpException 403.
-5. `admin_can_delete_any_post`: Memastikan admin dapat menghapus postingan milik siapapun tanpa hambatan dan datanya hilang dari DB.
-6. `create_post_assigns_correct_user_id`: Memastikan saat membuat post, user ID yang diasosiasikan benar-benar milik pengguna yang sedang aktif (authenticated).
+### A. Unit Testing (Total: 7 Tests)
+
+#### 1. [ExampleTest.php](file:///c:/FILE%20CODE/REPO%20Integrative%20programming/Laravel_12/laravel_12_tester/tests/Unit/ExampleTest.php) (1 Test)
+* `that_true_is_true`: Pengujian dasar untuk memastikan PHPUnit berjalan dengan benar dengan melakukan assertion sederhana (`assertTrue(true)`).
+
+#### 2. [PostServiceTest.php](file:///c:/FILE%20CODE/REPO%20Integrative%20programming/Laravel_12/laravel_12_tester/tests/Unit/PostServiceTest.php) (6 Tests)
+Menguji business logic [PostService](file:///c:/FILE%20CODE/REPO%20Integrative%20programming/Laravel_12/laravel_12_tester/app/Services/PostService.php) secara terisolasi tanpa HTTP request:
+* `admin_gets_all_posts`: Memastikan Admin dapat mengambil seluruh post dari semua user.
+* `regular_user_gets_only_own_posts`: Memastikan user biasa hanya dapat mengambil post miliknya sendiri.
+* `update_throws_403_for_non_owner`: Memastikan service melempar `HttpException` (HTTP 403) jika user yang bukan pemilik mencoba memperbarui postingan.
+* `delete_throws_403_for_non_admin`: Memastikan service melempar `HttpException` (HTTP 403) jika user selain Admin mencoba menghapus postingan.
+* `admin_can_delete_any_post`: Memastikan Admin dapat menghapus postingan milik siapapun dan data terhapus dari database.
+* `create_post_assigns_correct_user_id`: Memastikan saat membuat post, user ID yang disimpan sesuai dengan user yang mengaktifkannya.
 
 ---
 
-### B. Feature/API Testing (`PostTest`)
-Kelas pengujian [PostTest.php](file:///c:/FILE%20CODE/REPO%20Integrative%20programming/Laravel_12/laravel_12_tester/tests/Feature/PostTest.php) menyimulasikan panggilan API HTTP klien nyata terhadap endpoint `/api/v1/posts`.
+### B. Feature/API Testing (Total: 15 Tests)
 
-Skenario pengujian yang tercakup:
+#### 1. [ExampleTest.php](file:///c:/FILE%20CODE/REPO%20Integrative%20programming/Laravel_12/laravel_12_tester/tests/Feature/ExampleTest.php) (1 Test)
+* `the_application_returns_a_successful_response`: Memastikan endpoint root `/` dapat diakses dengan sukses (HTTP 200).
 
-| Kode Status | Skenario Pengujian | Deskripsi Kasus Uji |
-| :---: | :--- | :--- |
-| **401** | Unauthenticated | Memastikan request tanpa Token/Bearer Authentication ditolak saat mengakses endpoint list, create, dan update. |
-| **201** | Store (Create) | User terotentikasi berhasil membuat postingan baru. Pengujian memeriksa struktur JSON kembalian dan memastikan entitas tersimpan di DB. |
-| **200** | Index (List) | Memastikan data list post yang dikembalikan akurat sesuai hak akses (User hanya melihat miliknya, Admin melihat seluruhnya). |
-| **200** | Show (Detail) | Memastikan user dapat melihat detail data post miliknya secara spesifik. |
-| **403** | Forbidden | Memastikan User A dilarang mengedit atau melihat detail post milik User B. Juga memastikan User biasa dilarang menghapus post manapun. |
-| **404** | Not Found | Menguji respon ketika melakukan request GET/PUT untuk ID post yang tidak terdaftar di database. |
-| **200** | Admin Delete | Skenario khusus di mana Admin menghapus postingan milik pengguna lain dan memperoleh response sukses `{deleted: true}`. |
-| **422** | Validation Error | Mengirim data kosong (tanpa `title`) untuk memastikan request ditolak dengan pesan error validasi spesifik. |
+#### 2. [PostTest.php](file:///c:/FILE%20CODE/REPO%20Integrative%20programming/Laravel_12/laravel_12_tester/tests/Feature/PostTest.php) (14 Tests)
+Simulasi HTTP request/response API endpoint `/api/v1/posts`:
+* **Skenario 401 - Unauthenticated**
+  * `unauthenticated_user_cannot_list_posts`: Mencegah akses ke endpoint list post tanpa token (HTTP 401).
+  * `unauthenticated_user_cannot_create_post`: Mencegah pembuatan post baru tanpa token (HTTP 401).
+  * `unauthenticated_user_cannot_update_post`: Mencegah pembaruan post tanpa token (HTTP 401).
+* **Skenario 201 - Create Post**
+  * `authenticated_user_can_create_post`: User dengan token valid berhasil membuat post (HTTP 201) dan struktur JSON data lengkap.
+* **Skenario 200 - List Posts**
+  * `authenticated_user_can_list_own_posts`: User hanya menerima list post miliknya sendiri.
+  * `admin_can_see_all_posts`: Admin menerima seluruh post dari semua user.
+* **Skenario 200 - Show Post**
+  * `user_can_view_own_post`: User dapat melihat detail data post milik sendiri.
+* **Skenario 403 - Forbidden**
+  * `user_cannot_update_post_of_another_user`: User biasa dilarang memperbarui post milik user lain.
+  * `user_cannot_view_post_of_another_user`: User biasa dilarang melihat detail post milik user lain.
+  * `regular_user_cannot_delete_any_post`: User biasa (bukan Admin) dilarang menghapus post apa pun (termasuk miliknya sendiri).
+* **Skenario 404 - Not Found**
+  * `returns_404_for_nonexistent_post`: Mengembalikan error jika mengambil detail post dengan ID yang tidak terdaftar.
+  * `returns_404_when_updating_nonexistent_post`: Mengembalikan error jika memperbarui post dengan ID yang tidak terdaftar.
+* **Skenario Admin Delete**
+  * `admin_can_delete_any_post`: Admin berhasil menghapus post siapapun dan menerima response JSON `{deleted: true}`.
+* **Skenario 422 - Validation**
+  * `cannot_create_post_without_required_title`: Validasi error ketika request pembuat post tidak menyertakan field `title`.
 
 ---
 
