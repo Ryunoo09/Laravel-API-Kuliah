@@ -35,6 +35,10 @@
         }
     },
     "scripts": {
+        "test:report": [
+            "php artisan test",
+            "@php -r \"echo 'XML Report generated at: storage/framework/testing/junit-report.xml\n';\""
+        ],
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
             "@php artisan package:discover --ansi"
