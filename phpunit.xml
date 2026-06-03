@@ -30,4 +30,7 @@
         <env name="SESSION_DRIVER" value="array"/>
         <env name="TELESCOPE_ENABLED" value="false"/>
     </php>
+    <logging>
+        <junit outputFile="storage/framework/testing/junit-report.xml"/>
+    </logging>
 </phpunit>

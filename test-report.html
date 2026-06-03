@@ -1,0 +1,1477 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Laporan Pengujian - Laravel API</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-base: #0b0f19;
+            --bg-surface: #151b2c;
+            --bg-surface-hover: #1e263d;
+            --bg-surface-active: #242f4c;
+            
+            --border-color: #263352;
+            --border-focus: #4b6bfb;
+            
+            --text-primary: #f3f4f6;
+            --text-secondary: #9ca3af;
+            --text-muted: #6b7280;
+            
+            --color-success: #10b981;
+            --color-success-bg: rgba(16, 185, 129, 0.1);
+            --color-success-border: rgba(16, 185, 129, 0.25);
+            
+            --color-danger: #ef4444;
+            --color-danger-bg: rgba(239, 68, 68, 0.1);
+            --color-danger-border: rgba(239, 68, 68, 0.25);
+            
+            --color-warning: #f59e0b;
+            --color-warning-bg: rgba(245, 158, 11, 0.1);
+            --color-warning-border: rgba(245, 158, 11, 0.25);
+            
+            --color-info: #3b82f6;
+            --color-info-bg: rgba(59, 130, 246, 0.1);
+            --color-info-border: rgba(59, 130, 246, 0.25);
+            
+            --color-primary: #6366f1;
+            --color-primary-gradient: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+            
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 20px;
+            
+            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.15);
+            --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.25);
+            --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.4);
+            
+            --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        [data-theme="light"] {
+            --bg-base: #f8fafc;
+            --bg-surface: #ffffff;
+            --bg-surface-hover: #f1f5f9;
+            --bg-surface-active: #e2e8f0;
+            
+            --border-color: #e2e8f0;
+            --border-focus: #3b82f6;
+            
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-muted: #94a3b8;
+            
+            --color-success: #059669;
+            --color-success-bg: rgba(5, 150, 105, 0.08);
+            --color-success-border: rgba(5, 150, 105, 0.18);
+            
+            --color-danger: #dc2626;
+            --color-danger-bg: rgba(220, 38, 38, 0.08);
+            --color-danger-border: rgba(220, 38, 38, 0.18);
+            
+            --color-warning: #d97706;
+            --color-warning-bg: rgba(217, 119, 6, 0.08);
+            --color-warning-border: rgba(217, 119, 6, 0.18);
+            
+            --color-info: #2563eb;
+            --color-info-bg: rgba(37, 99, 235, 0.08);
+            --color-info-border: rgba(37, 99, 235, 0.18);
+            
+            --shadow-sm: 0 2px 8px rgba(148, 163, 184, 0.1);
+            --shadow-md: 0 8px 24px rgba(148, 163, 184, 0.15);
+            --shadow-lg: 0 16px 40px rgba(148, 163, 184, 0.2);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-base);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            transition: var(--transition);
+            line-height: 1.5;
+        }
+
+        /* Header Styles */
+        header {
+            background-color: var(--bg-surface);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1.25rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: var(--radius-md);
+            background: var(--color-primary-gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 800;
+            font-size: 1.25rem;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
+
+        .logo-text h1 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            letter-spacing: -0.025em;
+        }
+
+        .logo-text p {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .btn-theme {
+            background: none;
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+
+        .btn-theme:hover {
+            background-color: var(--bg-surface-hover);
+            border-color: var(--text-secondary);
+            transform: scale(1.05);
+        }
+
+        /* Container & Grid Layout */
+        main {
+            flex: 1;
+            max-width: 1400px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        /* Upload Area */
+        .upload-section {
+            background-color: var(--bg-surface);
+            border: 2px dashed var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 3rem 2rem;
+            text-align: center;
+            transition: var(--transition);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+        }
+
+        .upload-section.dragover {
+            border-color: var(--border-focus);
+            background-color: var(--bg-surface-hover);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .upload-section input[type="file"] {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            color: var(--color-primary);
+            animation: pulse-glow 2s infinite alternate;
+        }
+
+        .upload-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .upload-desc {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            max-width: 450px;
+            line-height: 1.6;
+        }
+
+        /* Dashboard Content (hidden initially until file parsed) */
+        .dashboard-content {
+            display: none;
+            flex-direction: column;
+            gap: 2rem;
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+
+        /* Summary Cards Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.25rem;
+        }
+
+        .stat-card {
+            background-color: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            position: relative;
+            overflow: hidden;
+            transition: var(--transition);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-md);
+            border-color: var(--border-focus);
+        }
+
+        .stat-card::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: var(--border-color);
+        }
+
+        .stat-card.success::after { background: var(--color-success); }
+        .stat-card.failed::after { background: var(--color-danger); }
+        .stat-card.warning::after { background: var(--color-warning); }
+        .stat-card.primary::after { background: var(--color-primary); }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .stat-value {
+            font-size: 2.25rem;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+        }
+
+        .stat-footer {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        /* Visual Analytics Area */
+        .analytics-section {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 1.5rem;
+        }
+
+        @media (max-width: 900px) {
+            .analytics-section {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .analytics-card {
+            background-color: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .analytics-card-title {
+            font-size: 1rem;
+            font-weight: 700;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chart-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 220px;
+            position: relative;
+        }
+
+        /* Custom SVG Donut Chart */
+        .donut-svg {
+            transform: rotate(-90deg);
+        }
+
+        .donut-hole {
+            fill: transparent;
+        }
+
+        .donut-ring {
+            fill: transparent;
+            stroke: var(--border-color);
+            stroke-width: 3.5;
+        }
+
+        .donut-segment {
+            fill: transparent;
+            stroke-width: 3.5;
+            stroke-linecap: round;
+            transition: stroke-dasharray 0.8s ease-in-out;
+        }
+
+        .donut-segment.success { stroke: var(--color-success); }
+        .donut-segment.failed { stroke: var(--color-danger); }
+        .donut-segment.warning { stroke: var(--color-warning); }
+
+        .donut-text-container {
+            position: absolute;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .donut-percentage {
+            font-size: 2rem;
+            font-weight: 800;
+        }
+
+        .donut-subtitle {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        /* SVG Bar Chart for Suite Durations */
+        .bar-chart {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            width: 100%;
+        }
+
+        .bar-row {
+            display: grid;
+            grid-template-columns: 180px 1fr 60px;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .bar-label {
+            font-size: 0.8125rem;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-weight: 500;
+        }
+
+        .bar-wrapper {
+            background-color: var(--bg-base);
+            height: 10px;
+            border-radius: 5px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .bar-fill {
+            background: var(--color-primary-gradient);
+            height: 100%;
+            border-radius: 5px;
+            width: 0;
+            transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .bar-value {
+            font-size: 0.8125rem;
+            font-weight: 600;
+            text-align: right;
+            color: var(--text-primary);
+        }
+
+        /* Filter Controls */
+        .filter-section {
+            background-color: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 1rem 1.5rem;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .search-wrapper {
+            position: relative;
+            flex: 1;
+            min-width: 280px;
+            max-width: 450px;
+        }
+
+        .search-input {
+            width: 100%;
+            background-color: var(--bg-base);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 0.625rem 1rem 0.625rem 2.5rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.875rem;
+            transition: var(--transition);
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--border-focus);
+            box-shadow: 0 0 0 3px rgba(75, 107, 251, 0.15);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 0.875rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            pointer-events: none;
+        }
+
+        .tab-filters {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .filter-btn {
+            background-color: var(--bg-base);
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            padding: 0.5rem 1rem;
+            border-radius: var(--radius-sm);
+            font-size: 0.8125rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 0.375rem;
+        }
+
+        .filter-btn:hover {
+            background-color: var(--bg-surface-hover);
+            color: var(--text-primary);
+        }
+
+        .filter-btn.active {
+            background-color: var(--color-primary);
+            color: white;
+            border-color: var(--color-primary);
+        }
+
+        .badge {
+            font-size: 0.6875rem;
+            font-weight: 700;
+            background-color: rgba(255, 255, 255, 0.15);
+            padding: 0.1rem 0.4rem;
+            border-radius: 10px;
+        }
+
+        /* Test Suites / Test List Accordion */
+        .test-list-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .suite-card {
+            background-color: var(--bg-surface);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+            transition: var(--transition);
+        }
+
+        .suite-header {
+            padding: 1.25rem 1.5rem;
+            background-color: rgba(255, 255, 255, 0.01);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            user-select: none;
+            transition: var(--transition);
+            border-bottom: 1px solid transparent;
+        }
+
+        .suite-header:hover {
+            background-color: var(--bg-surface-hover);
+        }
+
+        .suite-card.expanded {
+            border-color: var(--border-focus);
+            box-shadow: var(--shadow-md);
+        }
+
+        .suite-card.expanded .suite-header {
+            border-bottom-color: var(--border-color);
+            background-color: var(--bg-surface-hover);
+        }
+
+        .suite-title-area {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .suite-status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .suite-status-dot.success { background-color: var(--color-success); box-shadow: 0 0 8px var(--color-success); }
+        .suite-status-dot.failed { background-color: var(--color-danger); box-shadow: 0 0 8px var(--color-danger); }
+        .suite-status-dot.warning { background-color: var(--color-warning); box-shadow: 0 0 8px var(--color-warning); }
+
+        .suite-name {
+            font-weight: 700;
+            font-size: 0.9375rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .suite-file {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 400px;
+        }
+
+        .suite-meta-area {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+            flex-shrink: 0;
+        }
+
+        .suite-counts {
+            display: flex;
+            gap: 0.75rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .suite-badge {
+            padding: 0.125rem 0.5rem;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .suite-badge.success { background-color: var(--color-success-bg); color: var(--color-success); border: 1px solid var(--color-success-border); }
+        .suite-badge.failed { background-color: var(--color-danger-bg); color: var(--color-danger); border: 1px solid var(--color-danger-border); }
+        .suite-badge.warning { background-color: var(--color-warning-bg); color: var(--color-warning); border: 1px solid var(--color-warning-border); }
+
+        .suite-duration {
+            font-size: 0.8125rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .suite-arrow {
+            color: var(--text-muted);
+            transition: transform 0.25s ease;
+        }
+
+        .suite-card.expanded .suite-arrow {
+            transform: rotate(180deg);
+        }
+
+        .suite-content {
+            display: none;
+            padding: 0.5rem 1.5rem 1.5rem 1.5rem;
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+
+        .suite-card.expanded .suite-content {
+            display: block;
+        }
+
+        /* Test Cases Layout */
+        .test-cases-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 0.5rem;
+        }
+
+        .test-case-row {
+            border-bottom: 1px solid var(--border-color);
+            transition: var(--transition);
+        }
+
+        .test-case-row:last-child {
+            border-bottom: none;
+        }
+
+        .test-case-row:hover {
+            background-color: var(--bg-surface-active);
+        }
+
+        .test-case-header-row {
+            display: flex;
+            align-items: center;
+            padding: 0.875rem 0.5rem;
+            gap: 1rem;
+            cursor: pointer;
+        }
+
+        .test-status-icon {
+            font-size: 1.125rem;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            font-weight: 800;
+            flex-shrink: 0;
+        }
+
+        .test-status-icon.success { color: var(--color-success); }
+        .test-status-icon.failed { color: var(--color-danger); }
+        .test-status-icon.warning { color: var(--color-warning); }
+
+        .test-name-cell {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .test-case-name {
+            font-weight: 600;
+            font-size: 0.875rem;
+            color: var(--text-primary);
+        }
+
+        .test-case-class {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 0.125rem;
+        }
+
+        .test-assertions-cell {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+            width: 90px;
+            text-align: right;
+            flex-shrink: 0;
+        }
+
+        .test-time-cell {
+            font-size: 0.8125rem;
+            color: var(--text-secondary);
+            font-weight: 600;
+            width: 80px;
+            text-align: right;
+            flex-shrink: 0;
+        }
+
+        .test-expand-icon {
+            width: 16px;
+            text-align: center;
+            color: var(--text-muted);
+            flex-shrink: 0;
+        }
+
+        /* Failure Details Block */
+        .test-details-block {
+            display: none;
+            padding: 1rem 2.5rem 1.25rem 2.5rem;
+            border-top: 1px dashed var(--border-color);
+            background-color: rgba(239, 68, 68, 0.02);
+            animation: slideDown 0.2s ease-out;
+        }
+
+        .test-case-row.details-expanded .test-details-block {
+            display: block;
+        }
+
+        .test-details-block.success {
+            background-color: rgba(16, 185, 129, 0.01);
+        }
+
+        .detail-meta-item {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .detail-meta-item strong {
+            color: var(--text-primary);
+        }
+
+        .error-message-box {
+            background-color: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--color-danger-border);
+            border-left: 4px solid var(--color-danger);
+            border-radius: var(--radius-sm);
+            padding: 1rem;
+            margin-top: 0.75rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8125rem;
+            color: #f87171;
+            white-space: pre-wrap;
+            overflow-x: auto;
+            line-height: 1.6;
+        }
+
+        .stack-trace-box {
+            background-color: #0d1117;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            padding: 1rem;
+            margin-top: 0.75rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            color: #c9d1d9;
+            white-space: pre-wrap;
+            overflow-x: auto;
+            max-height: 250px;
+            overflow-y: auto;
+            line-height: 1.5;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--text-secondary);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .empty-state-icon {
+            font-size: 3rem;
+            color: var(--text-muted);
+        }
+
+        /* Footer */
+        footer {
+            background-color: var(--bg-surface);
+            border-top: 1px solid var(--border-color);
+            padding: 1.5rem 2rem;
+            text-align: center;
+            font-size: 0.8125rem;
+            color: var(--text-secondary);
+            margin-top: auto;
+        }
+
+        /* Animations */
+        @keyframes pulse-glow {
+            0% { transform: scale(1); filter: drop-shadow(0 0 2px rgba(99, 102, 241, 0.2)); }
+            100% { transform: scale(1.05); filter: drop-shadow(0 0 12px rgba(99, 102, 241, 0.6)); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Utilities */
+        .text-success { color: var(--color-success); }
+        .text-danger { color: var(--color-danger); }
+        .text-warning { color: var(--color-warning); }
+
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo-area">
+            <div class="logo-icon">LA</div>
+            <div class="logo-text">
+                <h1>Laravel API Test Report</h1>
+                <p>Dashboard Pengujian Rekayasa Perangkat Lunak (SE)</p>
+            </div>
+        </div>
+        <div class="header-controls">
+            <button id="themeToggle" class="btn-theme" title="Ubah Tema">
+                <!-- Sun Icon -->
+                <svg id="themeIconSun" class="hidden" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
+                <!-- Moon Icon -->
+                <svg id="themeIconMoon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>
+            </button>
+        </div>
+    </header>
+
+    <main>
+        <!-- Drag & Drop Zone -->
+        <section id="uploadSection" class="upload-section">
+            <div class="upload-icon">📥</div>
+            <h2 class="upload-title">Masukkan Laporan XML JUnit Anda</h2>
+            <p class="upload-desc">
+                Drag & drop file <code>junit-report.xml</code> ke sini, atau klik area ini untuk memilih file dari komputer Anda.<br>
+                <span style="font-size: 0.75rem; color: var(--text-muted)">File biasanya terletak di: <code>storage/framework/testing/junit-report.xml</code></span>
+            </p>
+            <input type="file" id="fileInput" accept=".xml">
+        </section>
+
+        <!-- Dashboard Content -->
+        <section id="dashboardContent" class="dashboard-content">
+            
+            <!-- Summary Stats Cards -->
+            <div class="stats-grid">
+                <div class="stat-card primary">
+                    <span class="stat-label">Total Test Suites</span>
+                    <span class="stat-value" id="statTotalSuites">0</span>
+                    <span class="stat-footer">Kelompok file pengujian</span>
+                </div>
+                <div class="stat-card primary">
+                    <span class="stat-label">Total Test Cases</span>
+                    <span class="stat-value" id="statTotalTests">0</span>
+                    <span class="stat-footer">Metode pengujian dijalankan</span>
+                </div>
+                <div class="stat-card success">
+                    <span class="stat-label">Passed Tests</span>
+                    <span class="stat-value text-success" id="statPassTests">0</span>
+                    <span class="stat-footer" id="statPassRate">100% kelulusan</span>
+                </div>
+                <div class="stat-card failed">
+                    <span class="stat-label">Failed / Error Tests</span>
+                    <span class="stat-value text-danger" id="statFailTests">0</span>
+                    <span class="stat-footer">Butuh perbaikan kode</span>
+                </div>
+                <div class="stat-card warning">
+                    <span class="stat-label">Total Assertions</span>
+                    <span class="stat-value text-warning" id="statAssertions">0</span>
+                    <span class="stat-footer">Pengecekan logika/ assertions</span>
+                </div>
+                <div class="stat-card primary">
+                    <span class="stat-label">Total Durasi</span>
+                    <span class="stat-value" id="statDuration">0.00s</span>
+                    <span class="stat-footer">Kecepatan eksekusi test</span>
+                </div>
+            </div>
+
+            <!-- Visual Charts -->
+            <div class="analytics-section">
+                <!-- Donut Chart Card -->
+                <div class="analytics-card">
+                    <div class="analytics-card-title">
+                        <span>Hasil Kelulusan Pengujian</span>
+                    </div>
+                    <div class="chart-container">
+                        <svg width="200" height="200" class="donut-svg" viewBox="0 0 40 40">
+                            <circle class="donut-hole" cx="20" cy="20" r="15.91549430918954"></circle>
+                            <circle class="donut-ring" cx="20" cy="20" r="15.91549430918954"></circle>
+                            
+                            <!-- Success segment -->
+                            <circle id="donutSegmentSuccess" class="donut-segment success" cx="20" cy="20" r="15.91549430918954" stroke-dasharray="100 0" stroke-dashoffset="0"></circle>
+                            
+                            <!-- Failed segment -->
+                            <circle id="donutSegmentFailed" class="donut-segment failed" cx="20" cy="20" r="15.91549430918954" stroke-dasharray="0 100" stroke-dashoffset="0"></circle>
+                        </svg>
+                        <div class="donut-text-container">
+                            <span class="donut-percentage" id="donutPercentVal">100%</span>
+                            <span class="donut-subtitle">PASSED</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Bar Chart Card for Suite Durations -->
+                <div class="analytics-card">
+                    <div class="analytics-card-title">
+                        <span>Durasi Eksekusi per Test Suite (Detik)</span>
+                    </div>
+                    <div id="barChartContainer" class="bar-chart">
+                        <!-- Bars dynamically rendered here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filter Controls -->
+            <div class="filter-section">
+                <div class="search-wrapper">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" id="searchInput" class="search-input" placeholder="Cari nama test case atau class...">
+                </div>
+                <div class="tab-filters">
+                    <button class="filter-btn active" data-status="all">Semua <span class="badge" id="badgeAll">0</span></button>
+                    <button class="filter-btn text-success" data-status="passed">Passed <span class="badge" id="badgePassed" style="background-color: var(--color-success);">0</span></button>
+                    <button class="filter-btn text-danger" data-status="failed">Failed / Error <span class="badge" id="badgeFailed" style="background-color: var(--color-danger);">0</span></button>
+                </div>
+            </div>
+
+            <!-- Test List Accordion -->
+            <div id="testList" class="test-list-container">
+                <!-- Dynamic Test Suites & cases will be inserted here -->
+            </div>
+
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 - Laravel API Testing Dashboard. Dibuat dengan standar Rekayasa Perangkat Lunak (SE).</p>
+    </footer>
+
+    <script>
+        // DOM Elements
+        const themeToggle = document.getElementById('themeToggle');
+        const themeIconSun = document.getElementById('themeIconSun');
+        const themeIconMoon = document.getElementById('themeIconMoon');
+        
+        const uploadSection = document.getElementById('uploadSection');
+        const fileInput = document.getElementById('fileInput');
+        const dashboardContent = document.getElementById('dashboardContent');
+        
+        const statTotalSuites = document.getElementById('statTotalSuites');
+        const statTotalTests = document.getElementById('statTotalTests');
+        const statPassTests = document.getElementById('statPassTests');
+        const statPassRate = document.getElementById('statPassRate');
+        const statFailTests = document.getElementById('statFailTests');
+        const statAssertions = document.getElementById('statAssertions');
+        const statDuration = document.getElementById('statDuration');
+        
+        const donutSegmentSuccess = document.getElementById('donutSegmentSuccess');
+        const donutSegmentFailed = document.getElementById('donutSegmentFailed');
+        const donutPercentVal = document.getElementById('donutPercentVal');
+        
+        const barChartContainer = document.getElementById('barChartContainer');
+        const searchInput = document.getElementById('searchInput');
+        const filterButtons = document.querySelectorAll('.filter-btn');
+        const testList = document.getElementById('testList');
+        
+        const badgeAll = document.getElementById('badgeAll');
+        const badgePassed = document.getElementById('badgePassed');
+        const badgeFailed = document.getElementById('badgeFailed');
+
+        // State Store
+        let parsedData = {
+            totalSuites: 0,
+            totalTests: 0,
+            passedTests: 0,
+            failedTests: 0,
+            totalAssertions: 0,
+            totalTime: 0,
+            suites: [] // Array of suites with cases
+        };
+        let currentFilterStatus = 'all';
+        let currentSearchQuery = '';
+
+        // Theme Toggle Logic
+        themeToggle.addEventListener('click', () => {
+            const isLight = document.body.getAttribute('data-theme') === 'light';
+            if (isLight) {
+                document.body.removeAttribute('data-theme');
+                themeIconSun.classList.add('hidden');
+                themeIconMoon.classList.remove('hidden');
+            } else {
+                document.body.setAttribute('data-theme', 'light');
+                themeIconSun.classList.remove('hidden');
+                themeIconMoon.classList.add('hidden');
+            }
+        });
+
+        // Try auto-loading default file first
+        window.addEventListener('DOMContentLoaded', () => {
+            fetch('storage/framework/testing/junit-report.xml')
+                .then(response => {
+                    if (response.ok) return response.text();
+                    throw new Error('Default report not found');
+                })
+                .then(xmlText => {
+                    parseXMLAndPopulate(xmlText);
+                    // Add visual indication of auto-load
+                    const notice = document.createElement('div');
+                    notice.style.cssText = 'background: var(--color-success-bg); color: var(--color-success); border: 1px solid var(--color-success-border); padding: 0.75rem 1rem; border-radius: var(--radius-sm); text-align: center; font-size: 0.875rem; font-weight: 600; margin-bottom: 1rem;';
+                    notice.innerHTML = '✓ Laporan terbaru otomatis dimuat dari: <code>storage/framework/testing/junit-report.xml</code>';
+                    mainContainer = document.querySelector('main');
+                    mainContainer.insertBefore(notice, uploadSection);
+                })
+                .catch(err => {
+                    console.log('Auto-load tip: Open this file via http server (e.g. php artisan serve) to automatically fetch test reports, or upload manually.');
+                });
+        });
+
+        // File Drag & Drop Events
+        uploadSection.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadSection.classList.add('dragover');
+        });
+
+        uploadSection.addEventListener('dragleave', () => {
+            uploadSection.classList.remove('dragover');
+        });
+
+        uploadSection.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadSection.classList.remove('dragover');
+            const file = e.dataTransfer.files[0];
+            if (file && file.name.endsWith('.xml')) {
+                handleFile(file);
+            } else {
+                alert('Tolong unggah file berformat .xml');
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                handleFile(file);
+            }
+        });
+
+        function handleFile(file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                parseXMLAndPopulate(e.target.result);
+            };
+            reader.onerror = function() {
+                alert('Gagal membaca file XML.');
+            };
+            reader.readAsText(file);
+        }
+
+        // XML Parser to State
+        function parseXMLAndPopulate(xmlText) {
+            try {
+                const parser = new DOMParser();
+                const xmlDoc = parser.parseFromString(xmlText, "text/xml");
+                
+                // Reset state
+                parsedData = {
+                    totalSuites: 0,
+                    totalTests: 0,
+                    passedTests: 0,
+                    failedTests: 0,
+                    totalAssertions: 0,
+                    totalTime: 0,
+                    suites: []
+                };
+
+                // Parse XML
+                const testsuitesNode = xmlDoc.querySelector('testsuites');
+                if (!testsuitesNode) {
+                    throw new Error('Format file bukan standar JUnit XML PHPUnit.');
+                }
+
+                // Collect suites
+                // Laravel/PHPUnit generates testsuites hierarchically.
+                // We want to flatten it to class-level testsuites (which contain file and testcases).
+                const allSuiteNodes = xmlDoc.querySelectorAll('testsuite');
+                
+                // Let's filter only suites that actually have a "file" attribute (these are actual test class files)
+                const classSuiteNodes = Array.from(allSuiteNodes).filter(suite => suite.hasAttribute('file'));
+                
+                parsedData.totalSuites = classSuiteNodes.length;
+
+                classSuiteNodes.forEach(suiteNode => {
+                    const suiteName = suiteNode.getAttribute('name');
+                    const suiteFile = suiteNode.getAttribute('file');
+                    const suiteTime = parseFloat(suiteNode.getAttribute('time') || 0);
+                    const suiteTestsCount = parseInt(suiteNode.getAttribute('tests') || 0);
+                    const suiteFailures = parseInt(suiteNode.getAttribute('failures') || 0);
+                    const suiteErrors = parseInt(suiteNode.getAttribute('errors') || 0);
+                    const suiteAssertions = parseInt(suiteNode.getAttribute('assertions') || 0);
+
+                    const testCases = [];
+                    const caseNodes = suiteNode.querySelectorAll('testcase');
+                    
+                    caseNodes.forEach(caseNode => {
+                        const caseName = caseNode.getAttribute('name');
+                        const caseClass = caseNode.getAttribute('class');
+                        const caseTime = parseFloat(caseNode.getAttribute('time') || 0);
+                        const caseAssertions = parseInt(caseNode.getAttribute('assertions') || 0);
+                        
+                        let status = 'passed';
+                        let failureMsg = '';
+                        let stackTrace = '';
+
+                        const failureNode = caseNode.querySelector('failure');
+                        const errorNode = caseNode.querySelector('error');
+
+                        if (failureNode) {
+                            status = 'failed';
+                            failureMsg = failureNode.getAttribute('message') || failureNode.textContent || 'Test Failed';
+                            stackTrace = failureNode.textContent || '';
+                        } else if (errorNode) {
+                            status = 'failed';
+                            failureMsg = errorNode.getAttribute('message') || errorNode.textContent || 'Test Error';
+                            stackTrace = errorNode.textContent || '';
+                        }
+
+                        testCases.push({
+                            name: cleanTestName(caseName),
+                            rawName: caseName,
+                            class: caseClass,
+                            time: caseTime,
+                            assertions: caseAssertions,
+                            status: status,
+                            failureMsg: failureMsg,
+                            stackTrace: stackTrace
+                        });
+                    });
+
+                    // Determine overall suite status
+                    let suiteStatus = 'success';
+                    if (suiteFailures > 0 || suiteErrors > 0) {
+                        suiteStatus = 'failed';
+                    }
+
+                    parsedData.suites.push({
+                        name: suiteName,
+                        file: suiteFile,
+                        time: suiteTime,
+                        status: suiteStatus,
+                        testsCount: suiteTestsCount,
+                        failures: suiteFailures,
+                        errors: suiteErrors,
+                        assertions: suiteAssertions,
+                        cases: testCases
+                    });
+                });
+
+                // Calculate global metrics
+                // Sometimes the root testsuites element has overall stats
+                const rootSuite = xmlDoc.querySelector('testsuites > testsuite');
+                if (rootSuite) {
+                    parsedData.totalTests = parseInt(rootSuite.getAttribute('tests') || 0);
+                    parsedData.totalAssertions = parseInt(rootSuite.getAttribute('assertions') || 0);
+                    parsedData.totalTime = parseFloat(rootSuite.getAttribute('time') || 0);
+                    const rootFailures = parseInt(rootSuite.getAttribute('failures') || 0);
+                    const rootErrors = parseInt(rootSuite.getAttribute('errors') || 0);
+                    parsedData.failedTests = rootFailures + rootErrors;
+                    parsedData.passedTests = parsedData.totalTests - parsedData.failedTests;
+                } else {
+                    // Manual aggregation if root node is missing
+                    parsedData.suites.forEach(s => {
+                        parsedData.totalTests += s.testsCount;
+                        parsedData.failedTests += (s.failures + s.errors);
+                        parsedData.totalAssertions += s.assertions;
+                        parsedData.totalTime += s.time;
+                    });
+                    parsedData.passedTests = parsedData.totalTests - parsedData.failedTests;
+                }
+
+                // Render Dashboard
+                renderDashboard();
+
+            } catch (err) {
+                console.error(err);
+                alert('Gagal memproses file XML. Pastikan formatnya benar: ' + err.message);
+            }
+        }
+
+        // Clean snake_case method names to readable sentences
+        function cleanTestName(name) {
+            if (name.startsWith('test_')) {
+                name = name.slice(5);
+            }
+            return name
+                .replace(/_/g, ' ')
+                .replace(/\b\w/g, c => c.toUpperCase());
+        }
+
+        // Render UI
+        function renderDashboard() {
+            // Show content area
+            dashboardContent.style.display = 'flex';
+            
+            // Populate metrics
+            statTotalSuites.textContent = parsedData.totalSuites;
+            statTotalTests.textContent = parsedData.totalTests;
+            statPassTests.textContent = parsedData.passedTests;
+            statFailTests.textContent = parsedData.failedTests;
+            statAssertions.textContent = parsedData.totalAssertions;
+            statDuration.textContent = parsedData.totalTime.toFixed(2) + 's';
+
+            // Pass rate text & badge
+            const passRate = parsedData.totalTests > 0 
+                ? Math.round((parsedData.passedTests / parsedData.totalTests) * 100) 
+                : 0;
+            statPassRate.textContent = `${passRate}% tingkat kelulusan`;
+            donutPercentVal.textContent = `${passRate}%`;
+            
+            if (passRate === 100) {
+                document.querySelector('.stat-card.success').classList.add('success');
+                document.querySelector('.stat-card.success').classList.remove('failed');
+            } else {
+                document.querySelector('.stat-card.success').classList.remove('success');
+                document.querySelector('.stat-card.success').classList.add('failed');
+            }
+
+            // Donut Chart updates
+            // Stroke-dasharray format: "[success_value] [remaining_value]"
+            // R = 15.915 => Circumference = 100
+            const successPercent = passRate;
+            const failPercent = 100 - passRate;
+
+            donutSegmentSuccess.setAttribute('stroke-dasharray', `${successPercent} 100`);
+            donutSegmentFailed.setAttribute('stroke-dasharray', `${failPercent} 100`);
+            donutSegmentFailed.setAttribute('stroke-dashoffset', `-${successPercent}`);
+
+            // Update filters badge counts
+            badgeAll.textContent = parsedData.totalTests;
+            badgePassed.textContent = parsedData.passedTests;
+            badgeFailed.textContent = parsedData.failedTests;
+
+            // Render Bar Chart (Max 5 suites)
+            barChartContainer.innerHTML = '';
+            const sortedSuites = [...parsedData.suites].sort((a, b) => b.time - a.time).slice(0, 5);
+            const maxDuration = Math.max(...sortedSuites.map(s => s.time), 0.1);
+
+            sortedSuites.forEach(suite => {
+                const shortName = suite.name.replace('Tests\\', '');
+                const percentWidth = (suite.time / maxDuration) * 100;
+                
+                const row = document.createElement('div');
+                row.className = 'bar-row';
+                row.innerHTML = `
+                    <div class="bar-label" title="${suite.name}">${shortName}</div>
+                    <div class="bar-wrapper">
+                        <div class="bar-fill" style="width: 0%" data-width="${percentWidth}%"></div>
+                    </div>
+                    <div class="bar-value">${suite.time.toFixed(3)}s</div>
+                `;
+                barChartContainer.appendChild(row);
+            });
+
+            // Trigger bar chart animation after a short delay
+            setTimeout(() => {
+                document.querySelectorAll('.bar-fill').forEach(fill => {
+                    fill.style.width = fill.getAttribute('data-width');
+                });
+            }, 100);
+
+            // Filter & Search Render
+            applyFilters();
+        }
+
+        // Apply Search and Filters together
+        function applyFilters() {
+            testList.innerHTML = '';
+
+            let matchedTestsCount = 0;
+
+            parsedData.suites.forEach((suite, suiteIndex) => {
+                // Filter test cases in this suite
+                const filteredCases = suite.cases.filter(testCase => {
+                    const matchesStatus = currentFilterStatus === 'all' || 
+                        (currentFilterStatus === 'passed' && testCase.status === 'passed') ||
+                        (currentFilterStatus === 'failed' && testCase.status === 'failed');
+
+                    const matchesSearch = currentSearchQuery === '' || 
+                        testCase.name.toLowerCase().includes(currentSearchQuery.toLowerCase()) || 
+                        testCase.class.toLowerCase().includes(currentSearchQuery.toLowerCase()) ||
+                        testCase.rawName.toLowerCase().includes(currentSearchQuery.toLowerCase());
+
+                    return matchesStatus && matchesSearch;
+                });
+
+                if (filteredCases.length === 0) return; // Skip suite if no cases match
+
+                matchedTestsCount += filteredCases.length;
+
+                // Render Suite Header & Body
+                const suiteCard = document.createElement('div');
+                suiteCard.className = `suite-card ${suite.status === 'failed' ? 'failed-suite' : ''}`;
+                suiteCard.id = `suite-${suiteIndex}`;
+
+                const suiteHeader = document.createElement('div');
+                suiteHeader.className = 'suite-header';
+                
+                const shortSuiteName = suite.name.replace('Tests\\', '');
+                const displayPath = suite.file.substring(suite.file.indexOf('tests'));
+
+                suiteHeader.innerHTML = `
+                    <div class="suite-title-area">
+                        <span class="suite-status-dot ${suite.status === 'failed' ? 'failed' : 'success'}"></span>
+                        <span class="suite-name" title="${suite.name}">${shortSuiteName}</span>
+                        <span class="suite-file" title="${suite.file}">${displayPath}</span>
+                    </div>
+                    <div class="suite-meta-area">
+                        <div class="suite-counts">
+                            <span class="suite-badge success">✓ ${filteredCases.filter(c => c.status === 'passed').length}</span>
+                            ${filteredCases.filter(c => c.status === 'failed').length > 0 ? `<span class="suite-badge failed">✗ ${filteredCases.filter(c => c.status === 'failed').length}</span>` : ''}
+                        </div>
+                        <div class="suite-duration">⏱ ${suite.time.toFixed(3)}s</div>
+                        <span class="suite-arrow">▼</span>
+                    </div>
+                `;
+
+                const suiteContent = document.createElement('div');
+                suiteContent.className = 'suite-content';
+
+                const table = document.createElement('div');
+                table.className = 'test-cases-table';
+
+                filteredCases.forEach((testCase, caseIndex) => {
+                    const row = document.createElement('div');
+                    row.className = `test-case-row ${testCase.status === 'failed' ? 'failed-case' : ''}`;
+                    
+                    row.innerHTML = `
+                        <div class="test-case-header-row" data-suite="${suiteIndex}" data-case="${caseIndex}">
+                            <span class="test-status-icon ${testCase.status === 'failed' ? 'failed text-danger' : 'success text-success'}">
+                                ${testCase.status === 'failed' ? '✗' : '✓'}
+                            </span>
+                            <div class="text-name-cell">
+                                <div class="test-case-name">${testCase.name}</div>
+                                <div class="test-case-class">${testCase.class}::${testCase.rawName}</div>
+                            </div>
+                            <div class="test-assertions-cell">asserts: ${testCase.assertions}</div>
+                            <div class="test-time-cell">${testCase.time.toFixed(3)}s</div>
+                            <span class="test-expand-icon">${testCase.status === 'failed' ? '▼' : ''}</span>
+                        </div>
+                        ${testCase.status === 'failed' ? `
+                            <div class="test-details-block">
+                                <div class="detail-meta-item">Status: <strong class="text-danger">Failed</strong></div>
+                                <div class="detail-meta-item">Assertations: <strong>${testCase.assertions}</strong></div>
+                                <div class="detail-meta-item">Execution Time: <strong>${testCase.time.toFixed(4)} detik</strong></div>
+                                
+                                <div style="font-weight: 700; font-size: 0.8125rem; margin-top: 1rem; color: var(--text-primary);">Pesan Kegagalan (Failure Message):</div>
+                                <div class="error-message-box">${escapeHTML(testCase.failureMsg)}</div>
+                                
+                                ${testCase.stackTrace ? `
+                                    <div style="font-weight: 700; font-size: 0.8125rem; margin-top: 1rem; color: var(--text-primary);">Stack Trace:</div>
+                                    <div class="stack-trace-box">${escapeHTML(testCase.stackTrace)}</div>
+                                ` : ''}
+                            </div>
+                        ` : ''}
+                    `;
+
+                    // Add click event for expansion (only for failed cases or details)
+                    if (testCase.status === 'failed') {
+                        const headerRow = row.querySelector('.test-case-header-row');
+                        headerRow.addEventListener('click', (e) => {
+                            row.classList.toggle('details-expanded');
+                            const arrow = headerRow.querySelector('.test-expand-icon');
+                            arrow.textContent = row.classList.contains('details-expanded') ? '▲' : '▼';
+                        });
+                    }
+
+                    table.appendChild(row);
+                });
+
+                suiteContent.appendChild(table);
+                suiteCard.appendChild(suiteHeader);
+                suiteCard.appendChild(suiteContent);
+                testList.appendChild(suiteCard);
+
+                // Add Accordion expand logic
+                suiteHeader.addEventListener('click', () => {
+                    const isExpanded = suiteCard.classList.contains('expanded');
+                    
+                    // Close all others optionally, but keep them independent is better for debugging
+                    suiteCard.classList.toggle('expanded');
+                });
+            });
+
+            // If zero results
+            if (matchedTestsCount === 0) {
+                testList.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🔍</div>
+                        <h3>Tidak Ada Test Case yang Cocok</h3>
+                        <p>Cobalah untuk mengubah kata kunci pencarian Anda atau status filter.</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Helper to Escape HTML
+        function escapeHTML(str) {
+            return str
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        // Input search event listener
+        searchInput.addEventListener('input', (e) => {
+            currentSearchQuery = e.target.value;
+            applyFilters();
+        });
+
+        // Filter button click listeners
+        filterButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                filterButtons.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentFilterStatus = btn.getAttribute('data-status');
+                applyFilters();
+            });
+        });
+    </script>
+</body>
+</html>

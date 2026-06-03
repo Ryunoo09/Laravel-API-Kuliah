@@ -12,6 +12,7 @@ Dokumen ini menjelaskan sistem pengujian otomatis yang diimplementasikan dalam p
     - [Feature/API Testing (`PostTest` & `AuthTest`)](#b-featureapi-testing-posttest--authtest)
 4. [Cara Menjalankan Pengujian](#4-cara-menjalankan-pengujian)
 5. [Praktik Terbaik (Best Practices) yang Diterapkan](#5-praktik-terbaik-best-practices-yang-diterapkan)
+6. [Integrasi Laporan JUnit XML & Dashboard HTML (Standar SE)](#6-integrasi-laporan-junit-xml--dashboard-html-standar-se)
 
 ---
 
@@ -172,3 +173,64 @@ Proyek ini telah mengikuti panduan dan standar industri terbaik dalam pengembang
 3. **Pernyataan Database (Database Assertions)**: Menggunakan `$this->assertDatabaseHas()` dan `$this->assertDatabaseMissing()` untuk membuktikan bahwa perubahan status benar-benar terjadi di tingkat persisten (database).
 4. **Struktur Assertions JSON yang Ketat**: Menguji format keluaran API dengan `assertJsonStructure` dan `assertJsonPath` untuk menghindari kerusakan integrasi pada aplikasi frontend / client API.
 5. **Atribut Pengujian PHP 8**: Menggunakan atribut PHP `#[Test]` daripada anotasi komentar `@test` demi kepatuhan terhadap standar PHP modern.
+
+---
+
+## 6. Integrasi Laporan JUnit XML & Dashboard HTML (Standar SE)
+
+Dalam standar **Rekayasa Perangkat Lunak (Software Engineering / SE)**, pelaporan hasil pengujian otomatis menggunakan format standar industri seperti **JUnit XML** sangat krusial, terutama ketika diintegrasikan dengan *CI/CD pipeline* (seperti Jenkins, GitLab CI, atau GitHub Actions).
+
+Proyek ini telah dikonfigurasi untuk menghasilkan laporan JUnit XML secara otomatis serta menyediakan dashboard visual HTML mandiri untuk membacanya di lingkungan lokal tanpa perlu server CI/CD eksternal.
+
+### 📊 Alur Kerja Laporan Pengujian
+
+```mermaid
+graph LR
+    A[Unit & Feature Tests] -->|Dijalankan| B[PHPUnit Engine]
+    B -->|Eksekusi Sukses| C[storage/framework/testing/junit-report.xml]
+    C -->|Muat Secara Lokal| D[test-report.html Dashboard]
+```
+
+### ⚙️ Konfigurasi yang Diterapkan
+1. **Perekaman Laporan JUnit XML**:
+   Dikonfigurasi di dalam file [phpunit.xml](file:///c:/FILE%20CODE/REPO%20Integrative%20programming/Laravel_12/laravel_12_tester/phpunit.xml) di bawah bagian `<logging>`:
+   ```xml
+   <logging>
+       <junit outputFile="storage/framework/testing/junit-report.xml"/>
+   </logging>
+   ```
+2. **Perintah Cepat (Shortcut Command)**:
+   Ditambahkan di dalam [composer.json](file:///c:/FILE%20CODE/REPO%20Integrative%20programming/Laravel_12/laravel_12_tester/composer.json) untuk mempercepat proses pengujian dan pembaruan log XML:
+   ```json
+   "test:report": [
+       "php artisan test",
+       "@php -r \"echo 'XML Report generated at: storage/framework/testing/junit-report.xml\n';\""
+   ]
+   ```
+
+### 🖥️ Cara Menjalankan & Membaca Dashboard secara Lokal
+
+#### Langkah 1: Jalankan Pengujian
+Ketik perintah berikut di terminal Anda untuk memperbarui data pengujian:
+```bash
+composer test:report
+```
+*Perintah ini akan menjalankan 35 kasus pengujian yang ada secara bersih (tanpa peringatan deprecation PHP 8.5+ karena konfigurasi database telah diperbaiki) dan mengekspor hasilnya menjadi `junit-report.xml`.*
+
+#### Langkah 2: Buka Dashboard Interaktif
+Pilih salah satu dari dua cara berikut untuk melihat laporan:
+
+* **Cara A (Drag & Drop File):**
+  1. Klik dua kali file **[test-report.html](file:///c:/FILE%20CODE/REPO%20Integrative%20programming/Laravel_12/laravel_12_tester/test-report.html)** di folder utama proyek Anda untuk membukanya di browser.
+  2. Tarik dan lepas (drag-and-drop) file `storage/framework/testing/junit-report.xml` ke dalam area upload dashboard.
+
+* **Cara B (Otomatis via Local Web Server):**
+  1. Pastikan server lokal Anda aktif (misalnya melalui `php artisan serve` di `http://127.0.0.1:8000`).
+  2. Buka url berikut di browser Anda: `http://127.0.0.1:8000/test-report.html`
+  3. Dashboard akan mendeteksi file laporan terbaru secara otomatis melalui Fetch API.
+
+### 🌟 Fitur Dashboard Laporan Pengujian
+* **Statistik Utama**: Menampilkan total test suite, test case, assertions, passed/failed tests, dan durasi eksekusi.
+* **Grafik Visual (SVG)**: Grafik donut status kelulusan pengujian dan grafik batang durasi untuk 5 test suite terlambat (semuanya dimuat 100% offline tanpa dependensi eksternal).
+* **Fitur Pencarian & Filter**: Pencarian real-time untuk nama test case/class dan filter status passed/failed.
+* **Format Error**: Menampilkan pesan kesalahan lengkap (*failure message*) dan tumpukan pelacakan (*stack trace*) untuk test case yang gagal dalam format blok kode yang mudah dibaca.
